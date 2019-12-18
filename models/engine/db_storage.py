@@ -20,6 +20,7 @@ class DBStorage:
     """DBStorage class"""
 
     __engine = None
+
     __session = None
 
     def __init__(self):
