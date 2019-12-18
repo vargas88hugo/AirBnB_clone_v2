@@ -232,5 +232,9 @@ class TestConsole(unittest.TestCase):
             self.assertEqual(
                 "** value missing **\n", f.getvalue())
 
+    def test_create_with_args(self):
+        """Test create method with optional arguments."""
+        pass
+
 if __name__ == "__main__":
     unittest.main()
