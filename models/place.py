@@ -1,9 +1,20 @@
 #!/usr/bin/python3
 """This is the place class"""
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, Float, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 from os import getenv
+
+
+place_amenity = Table("place_amenity", Base.metadata,
+                      Column("place_id", String(60),
+                             ForeignKey("places.id"),
+                             primary_key=True,
+                             nullable=False),
+                      Column("amenity_id", String(60),
+                             ForeignKey("amenities.id"),
+                             primary_key=True,
+                             nullable=False))
 
 
 class Place(BaseModel, Base):
@@ -34,19 +45,32 @@ class Place(BaseModel, Base):
     longitude = Column(Float, nullable=True)
     amenity_ids = []
 
+    if getenv("HBNB_TYPE_STORAGE") == "db":
+        reviews = relationship("Review", cascade="all, delete-orphan",
+                               backref="place")
+        amenities = relationship("Amenity", secondary=place_amenity,
+                                 viewonly=False,
+                                 back_populates="place_amenities")
+    else:
+        @property
+        def review(self):
+            """
+            attribute review
+            """
+            from models import storage
+            d = {}
+            for i, j in storage.all().items():
+                if j.place.id == self.id:
+                    d[i] = j
+            return d
 
-if getenv("HBNB_TYPE_STORAGE") == "db":
-    reviews = relationship("Review", cascade="all, delete-orphan",
-                           backref="place")
-else:
-    @property
-    def review(self):
-        """
-        attribute review
-        """
-        from models import storage
-        d = {}
-        for i, j in storage.all().items():
-            if j.place.id == self.id:
-                d[i] = j
-        return d
+        @property
+        def amenities(self):
+            """returns list amenity ids"""
+            return self.amenity_ids
+
+        @amenities.setter
+        def amenities(self, obj):
+            """appends amenity id to amenity_ids"""
+            if type(obj) is Amenity and obj.id not in self.amenity_ids:
+                self.amenity_ids.append(obj.id)
