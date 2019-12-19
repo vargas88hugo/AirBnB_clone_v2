@@ -2,9 +2,7 @@
 """This is the state class"""
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String
-from models.city import City
-import models
+from sqlalchemy import Column, String
 import os
 
 
@@ -18,16 +16,15 @@ class State(BaseModel, Base):
     name = Column(String(128),
                   nullable=False)
 
-    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
-        cities = relationship("City",
-                              backref="state",
-                              cascade="all, delete-orphan")
+    cities = relationship("City",
+                          backref="state",
+                          cascade="all, delete-orphan")
 
-    if os.getenv('HBNB_TYPE_STORAGE') == 'fs':
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
         @property
         def cities(self):
             _list = []
-            for _id, city in models.storage.all(City).items():
-                if self.id == city.state_id:
+            for city in self.cities:
+                if city.state_id == self.id:
                     _list.append(city)
             return _list

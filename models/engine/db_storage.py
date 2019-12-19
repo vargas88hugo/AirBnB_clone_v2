@@ -3,13 +3,6 @@
 """db_storage"""
 
 from models.base_model import BaseModel, Base
-from models.user import User
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.place import Place
-from models.review import Review
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
@@ -20,7 +13,6 @@ class DBStorage:
     """DBStorage class"""
 
     __engine = None
-
     __session = None
 
     def __init__(self):
@@ -72,3 +64,9 @@ class DBStorage:
         Session = scoped_session(sessionmaker(bind=self.__engine,
                                               expire_on_commit=False))
         self.__session = Session()
+
+    def reset(self):
+        """Reset session"""
+        self.__session.close()
+        Base.metadata.drop_all(self.__engine)
+        self.reload()
