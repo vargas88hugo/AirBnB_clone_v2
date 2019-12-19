@@ -53,15 +53,19 @@ class FileStorage:
                 for key, value in (json.load(f)).items():
                     value = eval(value["__class__"])(**value)
                     self.__objects[key] = value
-        except FileNotFoundError:
+        except Exception:
             pass
 
     def delete(self, obj=None):
-        """delete obj if exist
+        """delete obj from __objects if it’s inside
         """
         if obj:
-            _self = dict(self.all())
-            for key in _self.keys():
-                if key.split('.')[1] == obj.id:
-                    del self.all()[key]
+            copy = dict(self.all())
+            for k in copy.keys():
+                if k.split('.')[1] == obj.id:
+                    del self.all()[k]
             self.save()
+
+    def reset(self):
+        """Reset all objects in __objects"""
+        self.__objects = {}

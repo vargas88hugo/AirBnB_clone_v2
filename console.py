@@ -2,6 +2,7 @@
 """This is the console for AirBnB"""
 import cmd
 import re
+
 from models import storage
 from datetime import datetime
 from models.base_model import BaseModel
@@ -64,8 +65,6 @@ class HBNBCommand(cmd.Cmd):
                     value = cast(value)
                 except ValueError:
                     pass
-                # TODO: escape double quotes for string
-                # TODO: replace '_' with spaces ' ' for string
                 setattr(obj, pair[0], value)
             obj.save()
             print("{}".format(obj.id))
@@ -124,7 +123,8 @@ class HBNBCommand(cmd.Cmd):
             objects = storage.all()
             key = my_list[0] + '.' + my_list[1]
             if key in objects:
-                storage.delete(objects[key])
+                del objects[key]
+                storage.save()
             else:
                 raise KeyError()
         except SyntaxError:
@@ -141,21 +141,19 @@ class HBNBCommand(cmd.Cmd):
         Exceptions:
             NameError: when there is no object taht has the name
         """
-        objects = storage.all()
-        my_list = []
-        if not line:
+        try:
+            if line and line in self.all_classes:
+                objects = storage.all(eval(line))
+                args = line.split(" ")
+                if args[0] not in self.all_classes:
+                    raise NameError()
+            elif line is "":
+                objects = storage.all()
+            else:
+                raise NameError()
+            my_list = []
             for key in objects:
                 my_list.append(objects[key])
-            print(my_list)
-            return
-        try:
-            args = line.split(" ")
-            if args[0] not in self.all_classes:
-                raise NameError()
-            for key in objects:
-                name = key.split('.')
-                if name[0] == args[0]:
-                    my_list.append(objects[key])
             print(my_list)
         except NameError:
             print("** class doesn't exist **")
