@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """This is the console for AirBnB"""
 import cmd
+import re
 from models import storage
 from datetime import datetime
 from models.base_model import BaseModel
@@ -39,16 +40,33 @@ class HBNBCommand(cmd.Cmd):
             NameError: when there is no object taht has the name
         """
         try:
-            if line == "":
+            if not line:
                 raise SyntaxError()
             my_list = line.split(" ")
             obj = eval("{}()".format(my_list[0]))
-            for args in my_list[1:]:
-                if '=' in args:
-                    key, val = args.split('=')
-                    val = val.replace('_', '')
-                    if hasattr(obj, key):
-                        setattr(obj, key, eval(val))
+            for pair in my_list[1:]:
+                pair = pair.split('=', 1)
+                if len(pair) == 1 or "" in pair:
+                    continue
+                match = re.search('^"(.*)"$', pair[1])
+                cast = str
+                if match:
+                    value = match.group(1)
+                    value = value.replace('_', ' ')
+                    value = re.sub(r'(?<!\\)"', r'\\"', value)
+                else:
+                    value = pair[1]
+                    if "." in value:
+                        cast = float
+                    else:
+                        cast = int
+                try:
+                    value = cast(value)
+                except ValueError:
+                    pass
+                # TODO: escape double quotes for string
+                # TODO: replace '_' with spaces ' ' for string
+                setattr(obj, pair[0], value)
             obj.save()
             print("{}".format(obj.id))
         except SyntaxError:
@@ -106,8 +124,7 @@ class HBNBCommand(cmd.Cmd):
             objects = storage.all()
             key = my_list[0] + '.' + my_list[1]
             if key in objects:
-                del objects[key]
-                storage.save()
+                storage.delete(objects[key])
             else:
                 raise KeyError()
         except SyntaxError:
@@ -124,19 +141,21 @@ class HBNBCommand(cmd.Cmd):
         Exceptions:
             NameError: when there is no object taht has the name
         """
-        try:
-            if line and line in self.all_classes:
-                objects = storage.all(eval(line))
-                args = line.split(" ")
-                if args[0] not in self.all_classes:
-                    raise NameError()
-            elif line is "":
-                objects = storage.all()
-            else:
-                raise NameError()
-            my_list = []
+        objects = storage.all()
+        my_list = []
+        if not line:
             for key in objects:
                 my_list.append(objects[key])
+            print(my_list)
+            return
+        try:
+            args = line.split(" ")
+            if args[0] not in self.all_classes:
+                raise NameError()
+            for key in objects:
+                name = key.split('.')
+                if name[0] == args[0]:
+                    my_list.append(objects[key])
             print(my_list)
         except NameError:
             print("** class doesn't exist **")
