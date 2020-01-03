@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # This script installs nginx if is not already installed and prepare the server
-if [ $(dpkg-query -W -f='${Status}' $1 2> /dev/null | grep -c "ok installed") -eq 0 ];
+
+if [ ! "$(dpkg -l nginx 2> /dev/null && echo $?)" ];
 then
     apt-get -y update
     apt-get -y install nginx
