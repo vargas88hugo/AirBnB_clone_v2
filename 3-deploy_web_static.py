@@ -26,11 +26,34 @@ def do_deploy(archive_path):
         file = ntpath.basename(archive_path)
         folder = file[:-4]
         run("mkdir -p /data/web_static/releases/" + folder)
-        run("tar -xzf /tmp/" + file + " -C /data/web_static/releases/" + folder)
+        run("tar -xzf /tmp/" + file + " -C /data/web_static/releases/" +
+            folder)
         run("rm /tmp/" + file)
         run("rm /data/web_static/current")
         run("ln -sf /data/web_static/releases/" + folder +
-            " /data/web_static/current")
+            "/web_static/ /data/web_static/current")
         return True
     except Exception:
         return False
+
+
+def deploy():
+    var = do_pack()
+    if not var:
+        return False
+    return do_deploy(var)
+
+
+def do_pack():
+    filename = "web_static_" + datetime.now().strftime("%Y%m%d%H%M%S") + ".tgz"
+
+    if not os.path.exists("versions/"):
+        os.mkdir("versions/")
+
+    with tarfile.open("versions/" + filename, "w:gz") as tar:
+        tar.add("web_static", arcname=os.path.basename("web_static"))
+
+    if os.path.exists("versions/" + filename):
+        return "versions/" + filename
+
+    return None
