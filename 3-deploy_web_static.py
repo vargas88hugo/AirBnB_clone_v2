@@ -15,28 +15,6 @@ env.user = "ubuntu"
 env.hosts = ["35.196.230.188", "34.73.178.142"]
 
 
-def do_deploy(archive_path):
-
-    if not os.path.exists(archive_path):
-        return False
-
-    try:
-        put(archive_path, "/tmp/")
-
-        file = ntpath.basename(archive_path)
-        folder = file[:-4]
-        run("mkdir -p /data/web_static/releases/" + folder)
-        run("tar -xzf /tmp/" + file + " -C /data/web_static/releases/" +
-            folder)
-        run("rm /tmp/" + file)
-        run("rm /data/web_static/current")
-        run("ln -sf /data/web_static/releases/" + folder +
-            "/web_static/ /data/web_static/current")
-        return True
-    except Exception:
-        return False
-
-
 def deploy():
     var = do_pack()
     if not var:
@@ -57,3 +35,24 @@ def do_pack():
         return "versions/" + filename
 
     return None
+
+
+def do_deploy(archive_path):
+    if not os.path.exists(archive_path):
+        return False
+
+    try:
+        put(archive_path, "/tmp/")
+
+        file = ntpath.basename(archive_path)
+        folder = file[:-4]
+        run("mkdir -p /data/web_static/releases/" + folder)
+        run("tar -xzf /tmp/" + file + " -C /data/web_static/releases/" +
+            folder)
+        run("rm /tmp/" + file)
+        run("rm /data/web_static/current")
+        run("ln -sf /data/web_static/releases/" + folder +
+            "/web_static/ /data/web_static/current")
+        return True
+    except Exception:
+        return False
