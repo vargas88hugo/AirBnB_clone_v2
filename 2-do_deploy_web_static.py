@@ -26,11 +26,12 @@ def do_deploy(archive_path):
         file = ntpath.basename(archive_path)
         folder = file[:-4]
         run("mkdir -p /data/web_static/releases/" + folder)
-        run("tar -xzf /tmp/" + file + " -C /data/web_static/releases/" + folder)
+        run("tar -xzf /tmp/" + file + " -C /data/web_static/releases/" +
+            folder)
         run("rm /tmp/" + file)
         run("rm /data/web_static/current")
         run("ln -sf /data/web_static/releases/" + folder +
-            " /data/web_static/current")
+            "/web_static/ /data/web_static/current")
         return True
     except Exception:
         return False
