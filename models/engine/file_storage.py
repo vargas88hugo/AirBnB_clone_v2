@@ -69,3 +69,7 @@ class FileStorage:
     def reset(self):
         """Reset all objects in __objects"""
         self.__objects = {}
+
+    def close(self):
+        """method that call reload for serializing files"""
+        self.reload()

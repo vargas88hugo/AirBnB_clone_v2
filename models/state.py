@@ -20,11 +20,13 @@ class State(BaseModel, Base):
                           backref="state",
                           cascade="all, delete-orphan")
 
-    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+    if os.getenv("HBNB_TYPE_STORAGE") != "db":
         @property
         def cities(self):
-            _list = []
-            for city in self.cities:
-                if city.state_id == self.id:
-                    _list.append(city)
-            return _list
+            """public getter method cities to return the list
+            of City objects from storage linked to the current
+            State"""
+            from models import storage
+            from models import City
+            return [i for j, i in storage.all(City).items()
+                    if i.state_id == self.id]
